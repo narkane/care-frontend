@@ -49,8 +49,6 @@ import SwatchSelector from './SwatchSelector.vue'
 import NestedHideMenu from './NestedHideMenu.vue'
 import PageLoading from './PageLoading.vue'
 
-import rain from '@/assets/rain-drop-gif-5.gif'
-
 export default {
   components: {
     SwatchSelector,

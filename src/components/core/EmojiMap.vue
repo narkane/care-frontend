@@ -46,6 +46,7 @@ export default {
   props: ['reqEmojiLoc'],
   data() {
     return {
+      cacheImgBuffer: new Uint8ClampedArray(841 * 841 * 4), // have enough bytes
       doubleClicked: false,
       touchStartTimeStamp: null,
       touchEndTimeStamp: null,
@@ -1094,6 +1095,17 @@ export default {
       this.$refs.mapRef.$mapPromise.then((map) => {
         this.map = map
 
+        // Rectangle tool
+        const drawingManager = new this.google.maps.drawing.DrawingManager({
+          drawingMode: this.google.maps.drawing.OverlayType.MARKER,
+          drawingControl: true,
+          drawingControlOptions: {
+            position: this.google.maps.ControlPosition.TOP_CENTER,
+            drawingModes: this.google.maps.drawing.OverlayType.RECTANGLE
+          }
+        })
+        drawingManager.setMap(map)
+
         // Set map style properties
         map.setOptions({ styles: MapStyleData.blankPaper })
         // Set map type from roadmap -> terrain
@@ -1105,7 +1117,33 @@ export default {
         map.set('minZoom', 3)
         map.set('maxZoom', 19)
 
-        // Check for newly colored cells
+        // const drawingManager = new this.google.maps.drawing.DrawingManager()
+
+        // this.map = new this.google.maps.Map(
+        //   document.getElementById('map-canvas')
+        // )
+
+        // // Setting options for the Drawing Tool. In our case, enabling Polygon shape.
+        // drawingManager.setOptions({
+        //   drawingMode: this.google.maps.drawing.OverlayType.RECTANGLE,
+        //   drawingControl: true,
+        //   drawingControlOptions: {
+        //     position: this.google.maps.ControlPosition.TOP_CENTER,
+        //     drawingModes: [this.google.maps.drawing.OverlayType.RECTANGLE]
+        //   },
+        //   rectangleOptions: {
+        //     strokeColor: '#6c6c6c',
+        //     strokeWeight: 3.5,
+        //     fillColor: '#926239',
+        //     fillOpacity: 0.6,
+        //     editable: true,
+        //     draggable: true
+        //   }
+        // })
+        // // Loading the drawing Tool in the Map.
+        // drawingManager.setMap(this.map)
+
+        // FIXME - Check for newly colored cells
         window.setInterval(() => {
           this.updateColorMap()
         }, 1000)
@@ -1121,12 +1159,12 @@ export default {
       this.google.maps.event.addListenerOnce(map, 'idle', () => {
         // this.map.setZoom(this.minZoomLevel)
         this.drawGoogleGridsIntoRegion()
-        this.initColorMap()
         this.geolocation()
         this.center = { lat: 7, lng: 76 }
         if (this.map.getZoom() > 3) {
           this.map.setZoom(3)
         }
+        this.initColorMap()
       })
 
       // MOVE THIS TO INIT MAP EVENT -----------------------------
@@ -1267,14 +1305,16 @@ export default {
       this.$root.$on('color-grid', (ret) => {
         if (ret) {
           // this.loadCellGrid()
-          Object.values(this.cellRectangles).forEach((val) => {
-            val.setOptions({ visible: true })
-          })
+          // Object.values(this.cellRectangles).forEach((val) => {
+          // val.setOptions({ visible: true })
+          // })
+          this.loadCellGrid()
         } else {
           // this.unloadCellGrid()
-          Object.values(this.cellRectangles).forEach((val) => {
-            val.setOptions({ visible: false })
-          })
+          // Object.values(this.cellRectangles).forEach((val) => {
+          // val.setOptions({ visible: false })
+          // })
+          this.unloadCellGrid()
         }
       })
       // $root.$emit from UI.NestedHideMenu for opaqueColorGrid event
@@ -1318,10 +1358,10 @@ export default {
               apires.data.location[1],
               apires.data.cellData
             )
-            this.colorMap[apires.data.location] = {
-              data: apires.data.cellData,
-              time: apires.data.updatedAt
-            }
+            // this.colorMap[apires.data.location] = {
+            //   data: apires.data.cellData,
+            //   time: apires.data.updatedAt
+            // }
           })
           .catch((e) => {
             this.$vToastify.error({
@@ -1364,11 +1404,11 @@ export default {
           })
           .catch((e) => {
             console.log(e)
-            document.getElementById('card-header').style.background = '#EEEEEE'
-            this.cellInspect.owner = 'Not Found'
-            // this.cellInspect.timeStamp = 'Not Found'
-            this.cellInspect.cellLocation = `${this.mouseCellPosX}, ${this.mouseCellPosY}`
-            this.cellInspect.emojiLocation = this.emojiLocation
+            // document.getElementById('card-header').style.background = '#EEEEEE'
+            // this.cellInspect.owner = 'Not Found'
+            // // this.cellInspect.timeStamp = 'Not Found'
+            // this.cellInspect.cellLocation = `${this.mouseCellPosX}, ${this.mouseCellPosY}`
+            // this.cellInspect.emojiLocation = this.emojiLocation
           })
         const pos = {
           x: event.pageX,
@@ -1391,8 +1431,8 @@ export default {
       // maps' equivalent "World Coordinates" values
       // sets this.bounds
       // !! WHICH IS NEEDED FOR payload region
-      // this.setAllBounds()
-      this.mercCoords()
+      this.setAllBounds()
+      // this.mercCoords()
       // fetch all colored cells at rez 2
       const payload = {
         firstCell: {
@@ -1410,14 +1450,15 @@ export default {
         lastFetchRegionTime: this.lastFetchRegionTime
       }
       this.lastFetchRegionTime = new Date().getTime()
+      // console.table(payload)
 
-      // this.firstCell = payload.firstCell
       axios
         .post(`${process.env.VUE_APP_API_URL}/cell/fetchRegion`, payload)
         .then((res) => {
           if (res.data.length !== 0) {
             Promise.all(this.drawRegionOfCells(res)).then(() => {
               console.log('mapped: ', res)
+              // this.createCachedImage()
               if (
                 document.defaultView
                   .getComputedStyle(
@@ -1450,8 +1491,8 @@ export default {
       // maps' equivalent "World Coordinates" values
       // sets this.bounds
       // !! WHICH IS NEEDED FOR payload region
-      // this.setAllBounds()
-      this.mercCoords()
+      this.setAllBounds()
+      // this.mercCoords()
       // fetch all colored cells at rez 2
       const payload = {
         firstCell: {
@@ -1469,6 +1510,7 @@ export default {
         lastFetchRegionTime: this.lastFetchRegionTime
       }
       this.lastFetchRegionTime = new Date().getTime()
+      // console.table(payload)
 
       axios
         .post(`${process.env.VUE_APP_API_URL}/cell/fetchRegion`, payload)
@@ -1476,9 +1518,10 @@ export default {
           if (res.data.length !== 0) {
             Promise.all(this.drawRegionOfCells(res)).then(() => {
               console.log('map updated: ', res)
+              // this.createCachedImage()
             })
           } else {
-            // console.log('No new cells.')
+            console.log('No new cells.')
           }
         })
         .catch((err) => {
@@ -1492,15 +1535,22 @@ export default {
     drawRegionOfCells(region) {
       console.log('mapping...')
       const ret = region.data.map((val) => {
-        this.colorMap[val.location] = {
-          data: val.cellData,
-          time: val.updatedAt
-        }
+        // this.colorMap[val.location] = {
+        //   data: val.cellData,
+        //   time: val.updatedAt
+        // }
         // console.log('valllllllllllllllllllllllll: ', val)
         this.drawCell(val.location[0], val.location[1], val.cellData)
+        // this.createCachedPixel(
+        //   val.location[0],
+        //   val.location[1],
+        //   val.cellData.color
+        // )
         // console.log(JSON.stringify(val))
         // console.log('dog: ', val.location[0], val.location[1], val.cellData)
       })
+      // new Promise(this.createCachedImage()).then(() => {})
+      // this.createCachedImage()
       // resolve('hidden')
       return ret
     },
@@ -1857,60 +1907,146 @@ export default {
      */
     drawCell(x, y, data) {
       // Remove any old colored cell if exists
+      // if (this.cellRectangles[`${x},${y}`]) {
+      //   this.cellRectangles[`${x},${y}`].setMap(null)
+      // }
       if (this.cellRectangles[`${x},${y}`]) {
-        this.cellRectangles[`${x},${y}`].setMap(null)
+      } else {
+        const currentCell = {}
+        const cellsAtCurrentScale = Math.pow(29, 1 + 1)
+        currentCell.x = x / cellsAtCurrentScale
+        currentCell.y = y / cellsAtCurrentScale
+
+        const merc = mercator(currentCell)
+        // const mY = mercator(currentCellY)
+
+        // const cellWidth = 360 / cellsAtCurrentScale
+        const cellWidthInDegrees = 360 / Math.pow(29, 1 + 1)
+        const cellSizeInPercent = 1 / Math.pow(29, 1 + 1)
+        currentCell.x += cellSizeInPercent
+        currentCell.y += cellSizeInPercent
+        const mercCellSizeInDegrees = mercator(currentCell)
+
+        // console.log(
+        //   'CELLLLLLS FINAL FOAM!!: ',
+        //   cellWidthInDegrees,
+        //   merc,
+        //   mercCellSizeInDegrees
+        // )
+
+        this.cellRectangles[`${x},${y}`] = new this.google.maps.Rectangle({
+          // const cell = new this.google.maps.Rectangle({
+          strokeColor: '#000000',
+          strokeOpacity: 1,
+          strokeWeight: 0,
+          fillColor: data.color,
+          fillOpacity: this.cellOpacity,
+          bounds: {
+            north: merc.lat,
+            south: mercCellSizeInDegrees.lat,
+            east: merc.lon + cellWidthInDegrees,
+            west: merc.lon
+          },
+          zIndex: 1
+        })
+        this.cellRectangles[`${x},${y}`].setMap(this.map)
+        console.log(`${x},${y}`)
+        // cell.setMap(this.map)
       }
-
-      const currentCell = {}
-      const cellsAtCurrentScale = Math.pow(29, 1 + 1)
-      currentCell.x = x / cellsAtCurrentScale
-      currentCell.y = y / cellsAtCurrentScale
-
-      const merc = mercator(currentCell)
-      // const mY = mercator(currentCellY)
-
-      // const cellWidth = 360 / cellsAtCurrentScale
-      const cellWidthInDegrees = 360 / Math.pow(29, 1 + 1)
-      const cellSizeInPercent = 1 / Math.pow(29, 1 + 1)
-      currentCell.x += cellSizeInPercent
-      currentCell.y += cellSizeInPercent
-      const mercCellSizeInDegrees = mercator(currentCell)
-
-      // console.log(
-      //   'CELLLLLLS FINAL FOAM!!: ',
-      //   cellWidthInDegrees,
-      //   merc,
-      //   mercCellSizeInDegrees
-      // )
-
-      this.cellRectangles[`${x},${y}`] = new this.google.maps.Rectangle({
-        strokeColor: '#000000',
-        strokeOpacity: 1,
-        strokeWeight: 0,
-        fillColor: data.color,
-        fillOpacity: this.cellOpacity,
-        bounds: {
-          north: merc.lat,
-          south: mercCellSizeInDegrees.lat,
-          east: merc.lon + cellWidthInDegrees,
-          west: merc.lon
-        },
-        zIndex: 1
-      })
-      this.cellRectangles[`${x},${y}`].setMap(this.map)
     },
     unloadCellGrid() {
-      Object.entries(this.colorMap).forEach(([key]) => {
+      Object.entries(this.cellRectangles).forEach(([key]) => {
         this.cellRectangles[key].setMap(null)
       })
     },
     loadCellGrid() {
-      Object.entries(this.colorMap).forEach(([key]) => {
+      Object.entries(this.cellRectangles).forEach(([key]) => {
         this.cellRectangles[key].setMap(this.map)
       })
     },
 
+    // ANCHOR ⁡⁣⁣⁢𝗜𝗠𝗔𝗚𝗘 𝗠𝗘𝗧𝗛𝗢𝗗𝗦 --------------------------------------------------------------------⁡
+    applyColorMapOverlay(image) {
+      const imageBounds = {
+        north: 90,
+        south: -90,
+        east: 180,
+        west: -180
+      }
+
+      const historicalOverlay = new this.google.maps.GroundOverlay(
+        image,
+        imageBounds
+      )
+      historicalOverlay.setMap(this.map)
+    },
+    // eslint-disable-next-line max-statements
+    createCachedImage() {
+      const width = 841
+      const height = 841
+      // const buffer = new Uint8ClampedArray(width * height * 4) // have enough bytes
+
+      // for (let y = 0 y < height y++) {
+      // for (let x = 0 x < width x++) {
+      // const pos = (y * width + x) * 4 // position in buffer based on x and y
+      // this.cacheImgBuffer[pos] = this.hexToRgb(color).r // some R value [0, 255]
+      // this.cacheImgBuffer[pos + 1] = this.hexToRgb(color).g // some G value
+      // this.cacheImgBuffer[pos + 2] = this.hexToRgb(color).b // some B value
+      // this.cacheImgBuffer[pos + 3] = 255 // set alpha channel
+      // }
+      // }
+
+      // create off-screen canvas element
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+
+      canvas.width = width
+      canvas.height = height
+
+      // create imageData object
+      const idata = ctx.createImageData(width, height)
+
+      // set our buffer as source
+      idata.data.set(this.cacheImgBuffer)
+
+      // update canvas with new data
+      ctx.putImageData(idata, 0, 0)
+
+      const dataUri = canvas.toDataURL() // produces a PNG file
+
+      this.applyColorMapOverlay(dataUri)
+
+      // return dataUri
+
+      // const image = document.getElementById('imgm')
+      // image.onload = imageLoaded // optional callback function
+      // image.src = dataUri
+    },
+    createCachedPixel(x, y, color) {
+      const width = 841
+      // const height = 841
+      // const buffer = new Uint8ClampedArray(width * height * 4) // have enough bytes
+
+      // for (let y = 0 y < height y++) {
+      // for (let x = 0 x < width x++) {
+      const pos = (y * width + x) * 4 // position in buffer based on x and y
+      this.cacheImgBuffer[pos] = this.hexToRgb(color).r // some R value [0, 255]
+      this.cacheImgBuffer[pos + 1] = this.hexToRgb(color).g // some G value
+      this.cacheImgBuffer[pos + 2] = this.hexToRgb(color).b // some B value
+      this.cacheImgBuffer[pos + 3] = 255 // set alpha channel
+    },
+
     // ANCHOR ⁡⁣⁣⁢𝗠𝗜𝗦𝗖 𝗠𝗘𝗧𝗛𝗢𝗗𝗦 --------------------------------------------------------------------⁡
+    hexToRgb(hex) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+      return result
+        ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+          }
+        : null
+    },
     /** Set current real world GPS location to this.center*/
     geolocation() {
       navigator.geolocation.getCurrentPosition((position) => {
@@ -1986,6 +2122,9 @@ export default {
      * Set all bounds - cell, percent, geo, and world [with this.mercCoords()]
      */
     setAllBounds() {
+      // Set world coordinate bounds into this.bounds
+      this.mercCoords()
+
       this.cellBounds.ne.x = this.findSqIDByWorldCoords(this.bounds.ne.x)
       this.cellBounds.ne.y = this.findSqIDByWorldCoords(this.bounds.ne.y)
       this.cellBounds.sw.x = this.findSqIDByWorldCoords(this.bounds.sw.x)
@@ -2002,9 +2141,6 @@ export default {
 
       this.geoBounds.ne = this.map.getBounds().getNorthEast()
       this.geoBounds.sw = this.map.getBounds().getSouthWest()
-
-      // Set world coordinate bounds into this.bounds
-      this.mercCoords()
     },
     /** Returns users grid scale value as [0,1,2,3]
      * @returns {number} returns 0,1,2,3
@@ -2175,7 +2311,7 @@ export default {
       const plugin = document.createElement('script')
       plugin.setAttribute(
         'src',
-        `https://maps.googleapis.com/maps/api/js?key=${process.env.VUE_APP_GMAPS_API_KEY}&callback=init&libraries=&v=weekly`
+        `https://maps.googleapis.com/maps/api/js?key=${process.env.VUE_APP_GMAPS_API_KEY}&libraries=drawing&callback=init&v=weekly`
       )
       plugin.async = true
       document.head.appendChild(plugin)
