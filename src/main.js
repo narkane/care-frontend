@@ -29,7 +29,8 @@ Vue.use(VueToastify, {
 Vue.use(gMaps, {
   load: {
     key: process.env.VUE_APP_GMAPS_API_KEY,
-    libraries: 'places'
+    libraries: 'places,drawing',
+    v: '3.44.4'
   }
 })
 

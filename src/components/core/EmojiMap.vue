@@ -1096,15 +1096,15 @@ export default {
         this.map = map
 
         // Rectangle tool
-        const drawingManager = new this.google.maps.drawing.DrawingManager({
-          drawingMode: this.google.maps.drawing.OverlayType.MARKER,
-          drawingControl: true,
-          drawingControlOptions: {
-            position: this.google.maps.ControlPosition.TOP_CENTER,
-            drawingModes: this.google.maps.drawing.OverlayType.RECTANGLE
-          }
-        })
-        drawingManager.setMap(map)
+        // const drawingManager = new this.google.maps.drawing.DrawingManager({
+        //   drawingMode: this.google.maps.drawing.OverlayType.MARKER,
+        //   drawingControl: true,
+        //   drawingControlOptions: {
+        //     position: this.google.maps.ControlPosition.TOP_CENTER,
+        //     drawingModes: this.google.maps.drawing.OverlayType.RECTANGLE
+        //   }
+        // })
+        // drawingManager.setMap(map)
 
         // Set map style properties
         map.setOptions({ styles: MapStyleData.blankPaper })
@@ -1117,31 +1117,32 @@ export default {
         map.set('minZoom', 3)
         map.set('maxZoom', 19)
 
-        // const drawingManager = new this.google.maps.drawing.DrawingManager()
+        const drawingManager = new this.google.maps.drawing.DrawingManager()
 
         // this.map = new this.google.maps.Map(
         //   document.getElementById('map-canvas')
         // )
 
-        // // Setting options for the Drawing Tool. In our case, enabling Polygon shape.
-        // drawingManager.setOptions({
-        //   drawingMode: this.google.maps.drawing.OverlayType.RECTANGLE,
-        //   drawingControl: true,
-        //   drawingControlOptions: {
-        //     position: this.google.maps.ControlPosition.TOP_CENTER,
-        //     drawingModes: [this.google.maps.drawing.OverlayType.RECTANGLE]
-        //   },
-        //   rectangleOptions: {
-        //     strokeColor: '#6c6c6c',
-        //     strokeWeight: 3.5,
-        //     fillColor: '#926239',
-        //     fillOpacity: 0.6,
-        //     editable: true,
-        //     draggable: true
-        //   }
-        // })
-        // // Loading the drawing Tool in the Map.
-        // drawingManager.setMap(this.map)
+        // Setting options for the Drawing Tool. In our case, enabling Polygon shape.
+        drawingManager.setOptions({
+          // drawingMode: this.google.maps.drawing.OverlayType.RECTANGLE,
+          drawingControl: true,
+          drawingControlOptions: {
+            position: this.google.maps.ControlPosition.TOP_RIGHT,
+            drawingModes: [this.google.maps.drawing.OverlayType.RECTANGLE]
+          },
+          rectangleOptions: {
+            strokeColor: '#6c6c6c',
+            strokeWeight: 1,
+            strokeStyle: 'dashed',
+            fillColor: '#926239',
+            fillOpacity: 0.6,
+            editable: true
+            // draggable: true
+          }
+        })
+        // Loading the drawing Tool in the Map.
+        drawingManager.setMap(this.map)
 
         // FIXME - Check for newly colored cells
         window.setInterval(() => {
@@ -1950,7 +1951,7 @@ export default {
           zIndex: 1
         })
         this.cellRectangles[`${x},${y}`].setMap(this.map)
-        console.log(`${x},${y}`)
+        // console.log(`${x},${y}`)
         // cell.setMap(this.map)
       }
     },
