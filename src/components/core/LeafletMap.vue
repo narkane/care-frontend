@@ -15,7 +15,7 @@ export default {
         sw: null,
         ne: null
       },
-      cellRectangles: [[]],
+      cellRectangles: [],
       lastFetchRegionTime: 0
     }
   },
@@ -30,6 +30,7 @@ export default {
     this.drawGoogleGridsIntoRegion()
     // this.drawCell(400, 400, { color: 'blue' })
     this.initColorMap()
+    console.log('dog')
   },
   methods: {
     // eslint-disable-next-line max-statements
@@ -186,8 +187,10 @@ export default {
             [mercCellSizeInDegrees.lat, merc.lon]
           ],
           {
+            stroke: false,
+            fill: true,
             color: data.color,
-            opacity: 0.7 // this.cellOpacity,
+            fillOpacity: 0.7 // this.cellOpacity,
           }
           // ,
           // zIndex: 1
