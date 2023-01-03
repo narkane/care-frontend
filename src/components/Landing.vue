@@ -1,7 +1,8 @@
 <template>
   <v-container fluid>
     <!-- <GoogleMap /> -->
-    <EmojiMap />
+    <!-- <EmojiMap /> -->
+    <LeafletMap />
     <!-- <v-layout row wrap> -->
     <!-- <Description :description="$t('landing.DESCRIPTION')" /> -->
     <!-- </v-layout> -->

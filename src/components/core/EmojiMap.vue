@@ -1059,6 +1059,9 @@ export default {
       }
     }
   },
+  created() {
+    window.addEventListener('beforeunload', this.closeHandler)
+  },
   mounted() {
     this.initVerticalResizeForPhones()
     this.vueInit()
@@ -1134,7 +1137,6 @@ export default {
           rectangleOptions: {
             strokeColor: '#6c6c6c',
             strokeWeight: 1,
-            strokeStyle: 'dashed',
             fillColor: '#926239',
             fillOpacity: 0.6,
             editable: true
@@ -2316,6 +2318,10 @@ export default {
       )
       plugin.async = true
       document.head.appendChild(plugin)
+    },
+    closeHandler(event) {
+      this.unloadCellGrid()
+      this.unloadGoogleGrid()
     }
   },
   watch: {

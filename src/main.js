@@ -12,6 +12,9 @@ import VueToastify from 'vue-toastify'
 
 import * as gMaps from 'vue2-google-maps'
 
+// import { LMarker } from 'vue2-leaflet'
+import 'leaflet/dist/leaflet.css'
+
 import VueMaterial from 'vue-material'
 import 'vue-material/dist/vue-material.min.css'
 import 'vue-material/dist/theme/default.css'
