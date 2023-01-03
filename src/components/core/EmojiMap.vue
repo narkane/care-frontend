@@ -1937,8 +1937,8 @@ export default {
 
         this.cellRectangles[`${x},${y}`] = new this.google.maps.Rectangle({
           // const cell = new this.google.maps.Rectangle({
-          strokeColor: '#000000',
-          strokeOpacity: 1,
+          // strokeColor: '#000000',
+          // strokeOpacity: 1,
           strokeWeight: 0,
           fillColor: data.color,
           fillOpacity: this.cellOpacity,
