@@ -1909,51 +1909,51 @@ export default {
     drawCell(x, y, data) {
       // Remove any old colored cell if exists
       // if (this.cellRectangles[`${x},${y}`]) {
-      //   this.cellRectangles[`${x},${y}`].setMap(null)
-      // }
       if (this.cellRectangles[`${x},${y}`]) {
-      } else {
-        const currentCell = {}
-        const cellsAtCurrentScale = Math.pow(29, 1 + 1)
-        currentCell.x = x / cellsAtCurrentScale
-        currentCell.y = y / cellsAtCurrentScale
+        this.cellRectangles[`${x},${y}`].setMap(null)
+        // }
+      } // else {
+      const currentCell = {}
+      const cellsAtCurrentScale = Math.pow(29, 1 + 1)
+      currentCell.x = x / cellsAtCurrentScale
+      currentCell.y = y / cellsAtCurrentScale
 
-        const merc = mercator(currentCell)
-        // const mY = mercator(currentCellY)
+      const merc = mercator(currentCell)
+      // const mY = mercator(currentCellY)
 
-        // const cellWidth = 360 / cellsAtCurrentScale
-        const cellWidthInDegrees = 360 / Math.pow(29, 1 + 1)
-        const cellSizeInPercent = 1 / Math.pow(29, 1 + 1)
-        currentCell.x += cellSizeInPercent
-        currentCell.y += cellSizeInPercent
-        const mercCellSizeInDegrees = mercator(currentCell)
+      // const cellWidth = 360 / cellsAtCurrentScale
+      const cellWidthInDegrees = 360 / Math.pow(29, 1 + 1)
+      const cellSizeInPercent = 1 / Math.pow(29, 1 + 1)
+      currentCell.x += cellSizeInPercent
+      currentCell.y += cellSizeInPercent
+      const mercCellSizeInDegrees = mercator(currentCell)
 
-        // console.log(
-        //   'CELLLLLLS FINAL FOAM!!: ',
-        //   cellWidthInDegrees,
-        //   merc,
-        //   mercCellSizeInDegrees
-        // )
+      // console.log(
+      //   'CELLLLLLS FINAL FOAM!!: ',
+      //   cellWidthInDegrees,
+      //   merc,
+      //   mercCellSizeInDegrees
+      // )
 
-        this.cellRectangles[`${x},${y}`] = new this.google.maps.Rectangle({
-          // const cell = new this.google.maps.Rectangle({
-          // strokeColor: '#000000',
-          // strokeOpacity: 1,
-          strokeWeight: 0,
-          fillColor: data.color,
-          fillOpacity: this.cellOpacity,
-          bounds: {
-            north: merc.lat,
-            south: mercCellSizeInDegrees.lat,
-            east: merc.lon + cellWidthInDegrees,
-            west: merc.lon
-          },
-          zIndex: 1
-        })
-        this.cellRectangles[`${x},${y}`].setMap(this.map)
-        // console.log(`${x},${y}`)
-        // cell.setMap(this.map)
-      }
+      this.cellRectangles[`${x},${y}`] = new this.google.maps.Rectangle({
+        // const cell = new this.google.maps.Rectangle({
+        // strokeColor: '#000000',
+        // strokeOpacity: 1,
+        strokeWeight: 0,
+        fillColor: data.color,
+        fillOpacity: this.cellOpacity,
+        bounds: {
+          north: merc.lat,
+          south: mercCellSizeInDegrees.lat,
+          east: merc.lon + cellWidthInDegrees,
+          west: merc.lon
+        },
+        zIndex: 1
+      })
+      this.cellRectangles[`${x},${y}`].setMap(this.map)
+      // console.log(`${x},${y}`)
+      // cell.setMap(this.map)
+      // }
     },
     unloadCellGrid() {
       Object.entries(this.cellRectangles).forEach(([key]) => {
